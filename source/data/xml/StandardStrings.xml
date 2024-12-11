@@ -1,0 +1,44 @@
+<strings>
+    <!-- Systen configuration -->
+    <system>
+        <systemName>Theseus</systemName>
+        <diceRollTitle>Dice Roll</diceRollTitle>
+    </system>
+    <!-- Error messages -->
+    <errors>
+        <!-- General errors -->
+        <errorOccurred>An error has occurred: </errorOccurred>
+        <noMethod>Method does not exist.</noMethod>
+        <emptyString>Empty string!</emptyString>
+        <noParamsProvidedToClass>No parameters were proided to the class: </noParamsProvidedToClass>
+        <noParamsProvidedToMethod>No parameters were provided to the method: </noParamsProvidedToMethod>
+        <noDataProvided>No data provided to method.</noDataProvided>
+
+        <!-- System Errors -->
+        <systemCurlFailedToSend>Curl failed to send data to client system: </systemCurlFailedToSend>
+        <dialogItemsAndOptionsMismatch>Number of elements in dialogItems and dialogOptions are not equal.</dialogItemsAndOptionsMismatch>
+        <dialogItemsAndOptionsEmpty>Dialog items and/or options are empty.</dialogItemsAndOptionsEmpty>
+
+        <!-- User Control errors -->
+        <userControlNoParamsProvidedToClass>No parameters were provided to the user control: </userControlNoParamsProvidedToClass>
+        <userControlInsertFailed>Failed to insert new user.</userControlInsertFailed>
+        <userControlImportFailed>Failed to import user's characters at the last stage.</userControlImportFailed>
+        <userNotFound>User or user ID not found.</userNotFound>
+        <userControlInvalidUrl>Invalid URL format.</userControlInvalidUrl>
+
+        <!-- Character errors -->
+        <characterNotFound>Character not found.</characterNotFound>
+        <characterImportFailure>Failed to import characters.</characterImportFailure>
+        <characterImportMismatch>Character mismatch during import. Legacy and import character amount are not equal.</characterImportMismatch>
+        <noImportUserFound>No user found while importing characters. This is weird, it means the DB thought it inserted successfully, even though it didn't. Commit failure?</noImportUserFound>
+        <uuidImportMismatch>UUID mismatch during character import. This means legacy account data does not match the registered details.</uuidImportMismatch>
+        
+
+        <!-- Database errors -->
+        <dbImportFailure>Failed to import database.</dbImportFailure>
+        <dbInvalidSort>Invalid sort order.</dbInvalidSort>
+        <dbGenericError>Database error.</dbGenericError>
+        <dbDataFailedSanitisation>Invalid data; did not pass sanitisation.</dbDataFailedSanitisation>
+        <dbInvalidNotation>Invalid column notation.</dbInvalidNotation>
+    </errors>
+</strings>
