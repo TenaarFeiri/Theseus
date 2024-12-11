@@ -21,35 +21,6 @@
                 "getUser"
             ]
         ];
-        /*public function __construct() {
-            $params = Data::getParams();
-            if(isset($params['uuid']) && isset($params['username']) 
-                && !empty($params['uuid']) && !empty($params['username'])
-                && is_string($params['uuid']) && is_string($params['username'])) {
-                if($params['uuid'] == "" || $params['username'] == "") {
-                    throw new RuntimeException(__CLASS__ . ": " . Data::getXml()->getString("//errors/emptyString") . " (uuid or username)");
-                }
-                $this->uuid = $params['uuid'];
-                $this->username = $params['username'];
-            }
-            else {
-                if(!isset($params['uuid']) || empty($params['uuid'])) {
-                    if(!isset($_SERVER['HTTP_X_SECONDLIFE_OWNER_KEY'])) {
-                        throw new RuntimeException("Missing SL owner key");
-                    }
-                    $this->uuid = $_SERVER['HTTP_X_SECONDLIFE_OWNER_KEY'];
-                }
-                if(!isset($params['username']) || empty($params['username'])) {
-                    if(!isset($_SERVER['HTTP_X_SECONDLIFE_OWNER_NAME'])) {
-                        throw new RuntimeException("Missing SL owner name");
-                    }
-                    $this->username = $_SERVER['HTTP_X_SECONDLIFE_OWNER_NAME'];
-                }
-            }  
-            if(!$this->uuid || !$this->username) { // Verify that both vars are not null, or empty.
-                throw new RuntimeException(__CLASS__ . ": " . Data::getXml()->getString("//errors/userControlNoParamsProvidedToClass"));
-            }
-        }*/
 
         public function __construct() {
             $params = Data::getParams();
