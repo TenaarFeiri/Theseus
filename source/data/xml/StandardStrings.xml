@@ -18,6 +18,7 @@
         <systemCurlFailedToSend>Curl failed to send data to client system: </systemCurlFailedToSend>
         <dialogItemsAndOptionsMismatch>Number of elements in dialogItems and dialogOptions are not equal.</dialogItemsAndOptionsMismatch>
         <dialogItemsAndOptionsEmpty>Dialog items and/or options are empty.</dialogItemsAndOptionsEmpty>
+        <dialogNotComplete>Dialog is not filled out correctly.</dialogNotComplete>
 
         <!-- User Control errors -->
         <userControlNoParamsProvidedToClass>No parameters were provided to the user control: </userControlNoParamsProvidedToClass>
