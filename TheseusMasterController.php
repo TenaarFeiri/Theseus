@@ -26,6 +26,7 @@
             "user" => DIRECTORY_SEPARATOR . "source/classes/users/UserController",
             "character" => DIRECTORY_SEPARATOR . "source/classes/characters/CharacterController",
             "rptool" => DIRECTORY_SEPARATOR . "source/classes/system/RptoolController",
+            "menu" => DIRECTORY_SEPARATOR . "source/classes/system/MenuController",
         ];
         /**
          * Execute requested module function
@@ -35,8 +36,8 @@
          */
 
         public function __construct() {
-            require_once theseusPath() . "source/classes/parsers/XMLHandler.php";
-            Data::setXml(new XMLHandler(theseusPath() . xmlStringsPath())); // Set the XMLHandler.
+            require_once THESEUS_PATH . "source/classes/parsers/XMLHandler.php";
+            Data::setXml(new XMLHandler(THESEUS_XML_PATH)); // Set the XMLHandler.
             if(!Data::getXml()) {
                 throw new RuntimeException("XMLHandler not provided.");
             }
@@ -49,8 +50,6 @@
          * @throws RuntimeException If no parameters set
          */
         private function verifyParams() : void { // Bespoke function to verify parameters.
-            // Run verifies before it executes, so we can grab the xml reference ahead of time.
-            // That's why this is here and not in the constructor.
             if(empty(Data::getParams())) {
                 throw new RuntimeException("No parameters set.");
             }
@@ -65,7 +64,6 @@
         /**
          * Runs the controller.
          *
-         * @return Array|null
          * 
          */
         public function run() : ?Array {
@@ -75,7 +73,7 @@
             if(!$module) {
                 return null;
             }
-            (array)$responseArray = $module->process();
+            $responseArray = $module->process();
             if(empty($responseArray)) {
                 throw new RuntimeException("No response array returned from module.");
             }
@@ -84,7 +82,6 @@
         /**
          * Load and instantiate a module
          * 
-         * @param ?array $additionalParams Optional constructor parameters
          * @return ?object Instantiated module or null if invalid
          * @throws RuntimeException If module path invalid or class not found
          */
