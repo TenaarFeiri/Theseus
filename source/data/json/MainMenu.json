@@ -1,0 +1,12 @@
+{
+    "MainMenu" : {
+        "Cancel" : {
+            "action" : "cancel",
+            "module" : "MenuController"
+        },
+        "Characters" : {
+            "action" : "characterMenu",
+            "module" : "MenuController"
+        }
+    }
+}
