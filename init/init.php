@@ -44,9 +44,6 @@
         return $path;
     }
 
-    define('THESEUS_PATH', theseusPath());
-    define('THESEUS_CLASS_PATH', THESEUS_PATH . 'source/classes/');
-
     /**
      * Returns the path to the XML strings file.
      * 
@@ -55,6 +52,10 @@
     function xmlStringsPath() : String {
         return 'source/data/xml/StandardStrings.xml';
     }
+
+    define('THESEUS_PATH', theseusPath());
+    define('THESEUS_CLASS_PATH', THESEUS_PATH . 'source/classes/');
+    define('THESEUS_XML_PATH', THESEUS_PATH . xmlStringsPath());
 
     require_once theseusPath() . "source/classes/Data.php";
     Data::setParams(!empty($_POST) ? $_POST : $_GET);
@@ -97,8 +98,8 @@
             $_SERVER["HTTP_X_SECONDLIFE_SHARD"] = "Production";
             $_SERVER["HTTP_X_SECONDLIFE_REGION"] = "Starfall Roleplay";
             $_SERVER["HTTP_USER_AGENT"] = "Second Life LSL/srv.version (http://secondlife.com)";
-            $_SERVER["HTTP_X_SECONDLIFE_OWNER_KEY"] = "59ee7fce-5203-4d8c-b4db-12cb50ad2c10";
-            $_SERVER["HTTP_X_SECONDLIFE_OWNER_NAME"] = "Symphicat Resident";
+            $_SERVER["HTTP_X_SECONDLIFE_OWNER_KEY"] = "5675c8a0-430b-4281-af36-60734935fad3";
+            $_SERVER["HTTP_X_SECONDLIFE_OWNER_NAME"] = "Tenaar Feiri";
         } else {
             // Check if HTTP_USER_AGENT contains "Second Life LSL/" and (http://secondlife.com) or the https version.
             $userAgent = $_SERVER["HTTP_USER_AGENT"];
