@@ -84,10 +84,11 @@
                 $parameters["page"] = 1; // Fallback to 1 if validation fails
             }
             $result = [];
+            $parameters["usrDetails"] = [];
             try {
                 $database = new DatabaseHandler();
                 $database->connect();
-                $select = ["player_id"];
+                $select = ["player_id", "player_uuid", "player_titler_url"];
                 $where = ["player_uuid" => $parameters["uuid"]];
                 $result = $database->select("players", $select, $where);
                 if(empty($result)) {
@@ -99,6 +100,7 @@
                 if(!isset($result[0]["player_id"]) || empty($result[0]["player_id"])) {
                     throw new RuntimeException($GLOBALS['strings']->errors->userNotFound . " UUID: {$parameters['uuid']}.");
                 }
+                $parameters["usrDetails"] = $result[0];
                 $id = $result[0]["player_id"];
                 // Limit to 9 entries per page.
                 $select = ["character_id", "character_name"];
@@ -127,8 +129,8 @@
                 var_dump($result);
             }
             $menu = new MenuController();
-            $menu->setModule("charList"); // Tells the LSL script what this dialog is for.
-            $text = "CHARACTERS" . PHP_EOL . PHP_EOL;
+            $menu->setModule("CharacterController"); // Tells the LSL script which module to send its response to.
+            $text = "CHARACTERS (page {$parameters["page"]})" . PHP_EOL . PHP_EOL;
             $count = 0;
             $numericArray = [];
             $characterIds = [];
@@ -138,12 +140,21 @@
                 $text .= "{$count}. {$character['character_name']}" . PHP_EOL;
                 $characterIds[] = $character['character_id'];
             }
+            $numericArray[] = $parameters["page"] > 1 ? "<<" : "--";
+            $numericArray[] = "Cancel";
+            $numericArray[] = $parameters["page"] < PHP_INT_MAX ? ">>" : " ";
+            // Add two entries value 0 to characterIds to handle page navigation.
+            $characterIds[] = 0;
+            $characterIds[] = "cancel";
+            $characterIds[] = 0;
+            //$numericArray = array_reverse($numericArray);
+            //$characterIds = array_reverse($characterIds);
             if(THESEUS_DEBUG) {
                 var_dump($numericArray);
                 var_dump($characterIds);
                 echo PHP_EOL, $text, PHP_EOL;
             }
-            $menu->setDialogText(base64_encode($text));
+            $menu->setDialogText(rawurlencode($text));
             $menu->setDialog($numericArray, $characterIds);
             $menu->isTextBox(false);
             if($menu->confirmDialog()) {
@@ -153,9 +164,22 @@
                     echo "Confirmed.", PHP_EOL;
                     print_r($dialog);
                 }
-                $dialog = json_encode($dialog);
                 if(THESEUS_DEBUG) {
-                    echo "JSON: ", $dialog, PHP_EOL;
+                    echo "JSON: ", json_encode($dialog), PHP_EOL;
+                }
+                try {
+                    $sysComms = new SysComms([
+                    "uuid" => $parameters["usrDetails"]["player_uuid"],
+                    "url" => $parameters["usrDetails"]["player_titler_url"]
+                    ]);
+                    $sysComms->addToCurlDataArray("cmd", "showCharList");
+                    $sysComms->addToCurlDataArray("scriptFunc", "dialogs");
+                    $sysComms->addToCurlDataArray("data", $dialog);
+                    if(!$sysComms->sendMessage()) {
+                        throw new RuntimeException("Failed to send message to client system.");
+                    }
+                } catch (Exception $e) {
+                    throw new RuntimeException("Error sending message to client system: " . $e->getMessage());
                 }
             }
             return [1]; // Return 1 to indicate success.
@@ -226,8 +250,8 @@
                 $characterJsonArray["color"] = $this->normalizeRGBColor($characterJsonArray["color"]); // Validate & normalise color.
                 // All user input is now validated.
                 $update = [
-                    "character_name" => base64_decode($characterJsonArray["name"]),
-                    "character_description" => base64_decode($characterJsonArray["desc"]),
+                    "character_name" => urldecode($characterJsonArray["name"]),
+                    "character_description" => urldecode($characterJsonArray["desc"]),
                     "afk_ooc" => $characterJsonArray["afk_ooc"],
                     "color" => $characterJsonArray["color"],
                     "titler_offset" => $characterJsonArray["offset"],
@@ -321,9 +345,9 @@
             }
             $output = [
                 "char_id" => $result[0]["character_id"],
-                "name" => base64_encode($result[0]["character_name"]),
+                "name" => rawurlencode($result[0]["character_name"]),
                 "afk_ooc" => $result[0]["afk_ooc"],
-                "desc" => base64_encode($result[0]["character_description"]),
+                "desc" => rawurlencode($result[0]["character_description"]),
                 "color" => $result[0]["color"],
                 "offset" => $result[0]["titler_offset"],
                 "tags" => $result[0]["tags"]
@@ -339,6 +363,7 @@
                 ]); // Initialize the system communications class.
                 $updating = isset($parameters["updating"]) && $parameters["updating"] == 1;
                 $sysComms->addToCurlDataArray("cmd", $updating ? "updateCharacter" : "loadCharacter");
+                $sysComms->addToCurlDataArray("scriptFunc", "characters");
                 $sysComms->addToCurlDataArray("data", $output);
                 if(!$sysComms->sendMessage()) {
                     throw new RuntimeException("Failed to send message to client system.");
