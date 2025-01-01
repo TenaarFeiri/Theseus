@@ -3,7 +3,7 @@
     /**
      * Class ParameterStorage
      * 
-     * Master class for storing and retrieving parameters and data objects.
+     * Master class for storing and retrieving parameters and data objects. Also includes logging.
      * 
      * @method static array get() Returns stored parameters or initializes from POST/GET
      * @method static void set(array $newParams) Sets new parameters in storage
@@ -39,5 +39,12 @@
         
         public static function setXml(XMLHandler $xml): void {
             self::$xml = $xml;
+        }
+
+        public static function logAction(string $action, string $uuid = null, string $username = null): void {
+            // This needs a lot more work, finish later
+            $log = fopen(THESEUS_PATH . 'source/data/logs/log.txt', 'a');
+            fwrite($log, date('Y-m-d H:i:s') . ' - ' . $action . PHP_EOL);
+            fclose($log);
         }
     }
