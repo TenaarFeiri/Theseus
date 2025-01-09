@@ -4,6 +4,13 @@
         <systemName>Theseus</systemName>
         <diceRollTitle>Dice Roll</diceRollTitle>
     </system>
+    <!-- Menu Strings -->
+    <menu>
+        <mainMenu>
+            <title>Main Menu</title>
+            <description>Pick an option:</description>
+        </mainMenu>
+    </menu>
     <!-- Error messages -->
     <errors>
         <!-- General errors -->
