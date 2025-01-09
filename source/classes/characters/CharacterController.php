@@ -112,11 +112,15 @@
                 ];
                 $result = $database->select("player_characters", $select, $where, $options);
                 if(empty($result) && $parameters["page"] > 1) {
-                    $parameters["page"] = 1;
+                    $parameters["page"] = $parameters["lastPage"];
                     $options["offset"] = ($parameters["page"] - 1) * self::PAGE_LIMIT;
                     $result = $database->select("player_characters", $select, $where, $options); // Try again if page is empty.
                     if(empty($result)) { // If still empty, throw an error.
-                        throw new RuntimeException("No characters found for user.");
+                        $parameters["page"] = 1;
+                        $result = $database->select("player_characters", $select, $where, $options);
+                        if(empty($result)) {
+                            throw new RuntimeException("No characters found for user.");
+                        }
                     }
                 }
             } catch (Exception $e) {
@@ -129,7 +133,7 @@
                 var_dump($result);
             }
             $menu = new MenuController();
-            $menu->setModule("CharacterController"); // Tells the LSL script which module to send its response to.
+            $menu->setModule("character"); // Tells the LSL script which module to send its response to.
             $text = "CHARACTERS (page {$parameters["page"]})" . PHP_EOL . PHP_EOL;
             $count = 0;
             $numericArray = [];
@@ -158,6 +162,7 @@
             $menu->setDialog($numericArray, $characterIds);
             $menu->isTextBox(false);
             if($menu->confirmDialog()) {
+                $menu->setCommandResponseCommand("load|characterId=%s");
                 $dialog = $menu->getFinishedDialog();
                 $dialog["page"] = $parameters["page"];
                 if(THESEUS_DEBUG) {
@@ -282,6 +287,22 @@
         private function load() : ?Array {
             $output = [];
             $parameters = Data::getParams();
+            // If lowercased characterId equals --, or Cancel, just return 0.
+            if(strtolower($parameters["characterId"]) == "--" || strtolower($parameters["characterId"]) == "cancel") {
+                return [0];
+            } else if($parameters["characterId"] == ">>") {
+                Data::updateParam("lastPage", $parameters["page"]);
+                $parameters["page"]++;
+                Data::updateParam("page", $parameters["page"]);
+                Data::updateParam("function", "showCharList");
+                return [1, "status" => "runNewCommand"];
+            } else if($parameters["characterId"] == "<<") {
+                $parameters["page"]--;
+                Data::updateParam("page", $parameters["page"]);
+                Data::updateParam("function", "showCharList");
+                Data::updateParam("module", "character");
+                return [1, "status" => "runNewCommand"];
+            }
             // If the character ID is negative, identify the character_id from the player_characters table which
             // corresponds to the legacy character ID, simply called "legacy" (0 if not a legacy character).
             try {
