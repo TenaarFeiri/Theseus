@@ -28,6 +28,7 @@
             "rptool" => DIRECTORY_SEPARATOR . "source/classes/system/RptoolController",
             "menu" => DIRECTORY_SEPARATOR . "source/classes/system/MenuController",
         ];
+        private $activeModule;
         /**
          * Execute requested module function
          * 
@@ -69,7 +70,11 @@
         public function run() : ?Array {
             $this->verifyParams();
             // Execute the controller.
+            if ($this->activeModule instanceof Object) {
+                unset($this->activeModule);
+            }
             $module = $this->loadModule();
+            $this->activeModule = &$module;
             if(!$module) {
                 return null;
             }
