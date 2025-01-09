@@ -7,6 +7,7 @@
         private bool $isTextbox = false;
         private bool $validated = false;
         private string $module; // The module that this dialog is intended to call from the client system.
+        private string $commandResponse;
         private const VALID_FUNCTIONS = ["cancel"];
         private SysComms $sysComms;
 
@@ -24,7 +25,7 @@
         public function process() : ?Array {
             // First of all, if module is not set to "character", how did we get here?
             $parameters = Data::getParams();
-            if($parameters["module"] != "character") {
+            if($parameters["module"] != "menu") {
                 return null;
             }
             // Require syscomms, as we're using it if we're processing menus.
@@ -49,6 +50,28 @@
 
         private function cancel() : void {
             exit("CANCELED!");
+        }
+
+        /////////////// Menu Controller Methods ///////////////
+
+        private function mainMenu() : ?Array {
+            Data::loadMenus(); // Load the menus into memory.
+            $dialogText = Data::getXml()->getString("//menu/mainMenu/title") . "\n" . Data::getXml()->getString("//menu/mainMenu/description");
+            $this->setDialogText($dialogText);
+            $items = [];
+            $choices = [];
+            foreach(Data::$menus->MainMenu as $key => $value) {
+                $items[] = $key;
+                $choices[] = $value->action;
+            }
+            $this->setModule("menu");
+            exit("HELLO"); // You stopped here.
+            return [1]; // Report success to the master controller.
+        }
+
+        private function characterMenu() : ?Array {
+            Data::setParams(["module" => "character", "function" => "showCharList"]);
+            return [1, "status" => "runNewCommand"];
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -95,41 +118,59 @@
         private function orderRowsForDialog(array $array) : array {
             $rowLength = 3;
             $maxEntries = 12;
-            $array = array_slice($array, 0, $maxEntries);
-            $swappedArray = [];
-            for ($i = 0; $i < count($array); $i += $rowLength) {
-            $row = array_slice($array, $i, $rowLength);
-            if (count($row) === $rowLength) {
-                $temp = $row[0];
-                $row[0] = $row[2];
-                $row[2] = $temp;
-            }
-            $swappedArray = array_merge($swappedArray, $row);
-            }
-            $lastRow = array_slice($swappedArray, -$rowLength);
+            $mainEntries = 9;
+            // Extract special row
+            $lastRow = array_slice($array, -$rowLength);
             $isSpecialRow = (
-            count($lastRow) === $rowLength &&
-            $lastRow[1] === "Cancel" &&
-            (
-                ($lastRow[0] === "--" && $lastRow[2] === "--") ||
-                ($lastRow[0] === "<<" && $lastRow[2] === "--") ||
-                ($lastRow[0] === "--" && $lastRow[2] === ">>") ||
-                ($lastRow[0] === "<<" && $lastRow[2] === ">>")
-            )
+                count($lastRow) === $rowLength &&
+                $lastRow[1] === "Cancel" &&
+                (
+                    ($lastRow[0] === "--" && $lastRow[2] === "--") ||
+                    ($lastRow[0] === "<<" && $lastRow[2] === "--") ||
+                    ($lastRow[0] === "--" && $lastRow[2] === ">>") ||
+                    ($lastRow[0] === "<<" && $lastRow[2] === ">>")
+                )
             );
+            
+            // Process main array
+            $mainArray = $isSpecialRow ? 
+                array_slice($array, 0, -$rowLength) : 
+                array_slice($array, 0, $mainEntries);
+            
+            // Build special row
+            $specialRow = ["--", "Cancel", "--"];
             if ($isSpecialRow) {
-            $swappedArray = array_merge(array_reverse(array_slice($swappedArray, 0, -$rowLength)), $lastRow);
-            } else {
-            $swappedArray = array_reverse($swappedArray);
+                $specialRow = $lastRow;
             }
-            while (count($swappedArray) < $maxEntries) {
-            $swappedArray[] = "--";
+            
+            // Handle navigation buttons
+            if (in_array("<<", $mainArray)) {
+                $specialRow[0] = "<<";
+                $mainArray = array_values(array_diff($mainArray, ["<<"]));
             }
-            if ($isSpecialRow) {
-            $swappedArray = array_slice($swappedArray, 0, $maxEntries - $rowLength);
-            $swappedArray = array_merge($swappedArray, $lastRow);
+            if (in_array(">>", $mainArray)) {
+                $specialRow[2] = ">>";
+                $mainArray = array_values(array_diff($mainArray, [">>"]));
             }
-            return $swappedArray;
+            
+            // Create full grid with proper positioning
+            $gridArray = array_fill(0, $mainEntries, "--");
+            $nonEmpty = array_filter($mainArray, function($value) {
+                return $value !== "--";
+            });
+            $nonEmpty = array_values($nonEmpty);
+            
+            // Place non-empty entries in correct positions (top to bottom)
+            for ($i = 0; $i < count($nonEmpty); $i++) {
+                $gridArray[$i] = $nonEmpty[$i];
+            }
+            $newGrid = array_merge(array_slice($gridArray, 6, 3), array_slice($gridArray, 3, 3), array_slice($gridArray, 0, 3));
+            // Combine arrays with special row first
+            return array_merge($specialRow, $newGrid);
+        }
+
+        public function setCommandResponseCommand(string $commandResponse) {
+            $this->commandResponse = $commandResponse;
         }
 
         public function getFinishedDialog(string $arrayKey = null) : array {
@@ -144,6 +185,9 @@
                     "isTextbox" => $this->isTextbox ? 1 : 0,
                     "module" => $this->module
                 ];
+                if(!empty($this->commandResponse)) {
+                    $output["responseCommand"] = $this->commandResponse;
+                }
                 return $arrayKey ? [$arrayKey => $output] : $output;
             }
             throw new RuntimeException(Data::getXml()->getString("//errors/dialogNotComplete"));
