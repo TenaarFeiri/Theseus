@@ -141,6 +141,12 @@ default {
                 }
             }
         } else if(response == pingTheseus) {
+            if(status == 400) {
+                if(debug) {
+                    llOwnerSay("ERROR CODE: " + (string)status);
+                    llOwnerSay(body);
+                }
+            }
             if(status != 200 && status != 201) {
                 stopError = "Theseus is not responding. Tell the admins.";
                 state stopped;
