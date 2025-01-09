@@ -72,6 +72,19 @@
             return $runMethod;
         }
 
+        public function getUser() : Array {
+            $database = new DatabaseHandler();
+            $database->connect();
+            $select = ["*"];
+            $where = ["player_uuid" => $this->uuid];
+            (array)$result = $database->select("players", $select, $where, ["limit" => 1]);
+            $database->disconnect();
+            if(empty($result)) {
+                throw new RuntimeException(__CLASS__ . ": " . Data::getXml()->getString("//errors/userControlNoUserFound"));
+            }
+            return $result;
+        }
+
         private function checkUser() : Array {
             if(!isset(Data::getParams()["url"]) && 
                 (!isset(Data::getParams()["runtimeScript"]) || 
