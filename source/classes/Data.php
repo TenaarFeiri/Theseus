@@ -3,7 +3,7 @@
     /**
      * Class ParameterStorage
      * 
-     * Master class for storing and retrieving parameters and data objects. Also includes logging.
+     * Master class for any data-related methods.
      * 
      * @method static array get() Returns stored parameters or initializes from POST/GET
      * @method static void set(array $newParams) Sets new parameters in storage
@@ -13,6 +13,7 @@
     class Data {
         private static ?array $params = null;
         private static ?XMLHandler $xml = null;
+        public static ?stdClass $menus = null;
         
         public static function getParams(): array {
             if (self::$params === null) {
@@ -46,5 +47,16 @@
             $log = fopen(THESEUS_PATH . 'source/data/logs/log.txt', 'a');
             fwrite($log, date('Y-m-d H:i:s') . ' - ' . $action . PHP_EOL);
             fclose($log);
+        }
+
+        // Methods related to menus
+        public static function loadMenus(): void {
+            $path = THESEUS_PATH . 'source/data/json/Menus.json';
+            if (!file_exists($path)) {
+                http_response_code(400);
+                throw new RuntimeException("Menus file not found.");
+            }
+            $menus = file_get_contents($path);
+            self::$menus = json_decode($menus);
         }
     }
